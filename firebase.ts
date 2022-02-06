@@ -8,6 +8,7 @@ const fireBaseConfig = {
   domain: process.env.REACT_APP_FIREBASE_DOMAIN,
   storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
   projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  databaseURL: `https://${process.env.REACT_APP_FIREBASE_PROJECT_ID}.firebaseio.com`,
   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
   appID: process.env.REACT_APP_FIREBASE_APP_ID,
 };
