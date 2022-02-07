@@ -11,7 +11,8 @@ const App: React.FC = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const unSub = auth.onAuthStateChanged((authUser) => {
+    console.log("useEffect invoked");
+    const unSub = auth.onAuthStateChanged((authUser: any) => {
       if (authUser) {
         dispatch(
           login({
@@ -25,18 +26,22 @@ const App: React.FC = () => {
       }
     });
     return () => {
+      console.log("clean up");
+
       unSub();
     };
   }, [dispatch]);
 
-  return <>
-  {user.uid ? (
-    <div className={styles.app}>
-      <Feed />
-    </div>
-  ) : (
-    <Auth />
-  )}
-  </>;
-
-export default App
+  return (
+    <>
+      {user.uid ? (
+        <div className={styles.app}>
+          <Feed />
+        </div>
+      ) : (
+        <Auth />
+      )}
+    </>
+  );
+};
+export default App;
