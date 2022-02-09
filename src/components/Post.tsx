@@ -4,23 +4,72 @@ import { db } from "../firebase";
 import firebase from "firebase/app";
 import { useAppSelector } from "../app/hooks";
 import { selectUser } from "../features/userSlice";
-import { Avatar } from "@material-ui/core";
+import { Avatar, ThemeProvider } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core";
 import MessageIcon from "@material-ui/icons/Message";
 import SendIcon from "@material-ui/icons/Send";
 
 interface PROPS {
-  postId: string;
   avatar: string;
   image: string;
+  postId: string;
   text: string;
   timestamp: any;
   username: string;
 }
 
+interface COMMENT {
+  avatar: string;
+  id: string;
+  text: string;
+  timestamp: any;
+  username: string;
+}
+
+const useStyles = makeStyles((theme) => ({
+  small: {
+    width: theme.spacing(3),
+    height: theme.spacing(3),
+    marginRight: theme.spacing(1),
+  },
+}));
+
 const Post: React.FC<PROPS> = (props) => {
+  const classes = useStyles();
   const user = useAppSelector(selectUser);
   const [comment, setComment] = useState("");
+  const [comments, setComments] = useState<COMMENT[]>([
+    {
+      avatar: "",
+      id: "",
+      text: "",
+      timestamp: null,
+      username: "",
+    },
+  ]);
+  const [openComments, setOpenComments] = useState(false);
+
+  useEffect(() => {
+    const unSub = db
+      .collection("posts")
+      .doc(props.postId)
+      .collection("comments")
+      .orderBy("timestamp", "desc")
+      .onSnapshot((snapshot) => {
+        setComments(
+          snapshot.docs.map((doc) => ({
+            avatar: doc.data().avatar,
+            id: doc.id,
+            text: doc.data().text,
+            timestamp: doc.data().timestamp,
+            username: doc.data().username,
+          }))
+        );
+      });
+    return () => {
+      unSub();
+    };
+  }, [props.postId]);
 
   const newComment = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -55,6 +104,21 @@ const Post: React.FC<PROPS> = (props) => {
             <img src={props.image} alt="tweet" />
           </figure>
         )}
+
+        <MessageIcon className={styles.post_commentIcon} onClick={() => setOpenComments(!openComments)} />
+        {openComments && (
+          <ul>
+            {comments.map((comment) => (
+              <li key={comment.id} className={styles.post_comment}>
+                <Avatar src={comment.avatar} className={classes.small} />
+                <span className={styles.post_commentUser}>@{comment.username}</span>
+                <span className={styles.post_commentText}>{comment.text}</span>
+                <span className={styles.post_headerTime}>{new Date(comment.timestamp?.toDate()).toLocaleString()}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
         <form onSubmit={newComment}>
           <div className={styles.post_form}>
             <input
